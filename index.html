@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PR Branching & GitHub Actions Interactive Dashboard</title>
+  <!-- Google Fonts Outfit -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    /* JetBrains Mono overrides */
+    pre, code, .interactive-console {
+      font-family: 'JetBrains Mono', monospace !important;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Success Banner (hidden by default) -->
+  <div id="successBanner" class="success-banner" style="display: none; max-width: 1200px; margin: 1.5rem auto 0 auto; width: calc(100% - 3rem);">
+    <div class="banner-text">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+      <span>Congratulations! You've successfully completed all steps and merged your feature branch! 🚀</span>
+    </div>
+    <button onclick="resetChecklist()" style="padding: 0.25rem 0.75rem; font-size: 0.8rem; background: rgba(63, 185, 80, 0.2); border-color: rgba(63, 185, 80, 0.4);">Reset Progress</button>
+  </div>
+
+  <!-- Header -->
+  <header>
+    <div class="header-container">
+      <div class="brand">
+        <!-- Git Branch Icon -->
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="6" y1="3" x2="6" y2="15"></line>
+          <circle cx="18" cy="6" r="3"></circle>
+          <circle cx="6" cy="18" r="3"></circle>
+          <path d="M18 9a9 9 0 0 1-9 9"></path>
+        </svg>
+        <h1>Git Branching & GitHub Actions</h1>
+        <span class="badge">Lab Guide</span>
+      </div>
+      <div class="progress-widget">
+        <span class="progress-text">Progress: <strong id="progressPercent">0%</strong></span>
+        <div class="progress-bar-bg">
+          <div id="progressBar" class="progress-bar-fill"></div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Container -->
+  <main class="container">
+
+    <!-- Left Column: Guide and Simulators -->
+    <div class="main-content">
+      
+      <!-- Interactive Branch & PR Simulator -->
+      <div class="card purple-left">
+        <div class="card-title">
+          <!-- Pull Request Icon -->
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="18" cy="18" r="3"></circle>
+            <circle cx="6" cy="6" r="3"></circle>
+            <circle cx="6" cy="18" r="3"></circle>
+            <path d="M18 15V9a4 4 0 0 0-4-4H9"></path>
+          </svg>
+          Interactive Git Commit & Branch Flow
+        </div>
+        <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 1.5rem;">
+          Click the commits below to simulate the multi-branch Git workflow and preview the corresponding terminal commands.
+        </p>
+
+        <div class="branch-flow">
+          <div class="flow-container">
+            <div class="git-graph">
+              <div class="git-line"></div>
+              
+              <!-- Commit 1 -->
+              <div class="git-node main" onclick="showCommit(1)" style="margin-left: 5%;">
+                <span class="node-label">main</span>
+                <span class="node-desc">C1: Initial</span>
+              </div>
+              
+              <!-- Commit 2 -->
+              <div class="git-node feature" onclick="showCommit(2)" style="margin-left: 28%;">
+                <span class="node-label" style="color: var(--accent-purple);">feature-dev</span>
+                <span class="node-desc">C2: Add HTML</span>
+              </div>
+              
+              <!-- Commit 3 -->
+              <div class="git-node feature" onclick="showCommit(3)" style="margin-left: 50%;">
+                <span class="node-desc">C3: Add CSS</span>
+              </div>
+              
+              <!-- Commit 4 -->
+              <div class="git-node feature" onclick="showCommit(4)" style="margin-left: 72%;">
+                <span class="node-desc">C4: Fix Styles</span>
+              </div>
+
+              <!-- Commit 5 -->
+              <div class="git-node pr-merged" onclick="showCommit(5)" style="margin-left: 92%;">
+                <span class="node-label" style="color: var(--accent-green);">main</span>
+                <span class="node-desc">C5: Merged PR</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Console Output -->
+          <div class="interactive-console">
+            <div class="console-header">
+              <div>
+                <span class="console-dot"></span>
+                <span>bash - Terminal Simulator</span>
+              </div>
+              <span id="consoleStatus" style="color: var(--text-secondary); font-size: 0.75rem;">Interactive</span>
+            </div>
+            <div id="consoleBody" class="console-body">
+              <div class="console-line">
+                <span class="console-prompt">$</span> <span class="console-cmd">git log --oneline --graph --all</span>
+              </div>
+              <div class="console-line console-output">*   5a3b90f (HEAD -> main) Merge pull request #1 from feature-dev</div>
+              <div class="console-line console-output">|\  </div>
+              <div class="console-line console-output">| * 8c3d9a1 (feature-dev) C4: Fix minor CSS alignment bugs</div>
+              <div class="console-line console-output">| * 4d2e9b0 C3: Create custom styling in style.css</div>
+              <div class="console-line console-output">| * a2c3e4f C2: Create index.html structure</div>
+              <div class="console-line console-output">|/  </div>
+              <div class="console-line console-output">* 1b2a3f4 Initial commit - Repository initialized</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- GitHub Actions Runner Simulation -->
+      <div class="card orange-left">
+        <div class="card-title">
+          <!-- Play/Run Workflow Icon -->
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"></rect>
+            <line x1="7" y1="2" x2="7" y2="22"></line>
+            <line x1="17" y1="2" x2="17" y2="22"></line>
+            <line x1="2" y1="12" x2="22" y2="12"></line>
+          </svg>
+          GitHub Actions Workflow Runner Simulator
+        </div>
+        <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 1rem;">
+          Trigger a simulated GitHub Actions automation workflow. Watch the runner spin up, fetch your branch, lint/verify files, and output standard logs!
+        </p>
+
+        <!-- Tabs for Workflows -->
+        <div class="tab-nav">
+          <button class="tab-btn active" onclick="switchTab('lint-test')">lint-test.yml</button>
+          <button class="tab-btn" onclick="switchTab('deploy')">pages-deploy.yml</button>
+        </div>
+
+        <!-- Lint/Test YAML View -->
+        <div id="lint-test" class="tab-pane active">
+          <pre class="yaml-code"><span class="yaml-key">name</span>: <span class="yaml-string">Lint and Validate Files</span>
+
+<span class="yaml-key">on</span>:
+  <span class="yaml-key">pull_request</span>:
+    <span class="yaml-key">branches</span>: [ <span class="yaml-string">main</span> ]
+
+<span class="yaml-key">jobs</span>:
+  <span class="yaml-key">validate-code</span>:
+    <span class="yaml-key">runs-on</span>: <span class="yaml-string">ubuntu-latest</span>
+    <span class="yaml-key">steps</span>:
+      - <span class="yaml-key">name</span>: <span class="yaml-string">Checkout Code</span>
+        <span class="yaml-key">uses</span>: <span class="yaml-string">actions/checkout@v4</span>
+
+      - <span class="yaml-key">name</span>: <span class="yaml-string">Validate HTML Structure</span>
+        <span class="yaml-key">run</span>: <span class="yaml-string">npx htmlhint index.html</span>
+
+      - <span class="yaml-key">name</span>: <span class="yaml-string">Check CSS Formatting</span>
+        <span class="yaml-key">run</span>: <span class="yaml-string">npx stylelint style.css</span></pre>
+        </div>
+
+        <!-- Deploy YAML View -->
+        <div id="deploy" class="tab-pane">
+          <pre class="yaml-code"><span class="yaml-key">name</span>: <span class="yaml-string">Deploy Static Webpage to Pages</span>
+
+<span class="yaml-key">on</span>:
+  <span class="yaml-key">push</span>:
+    <span class="yaml-key">branches</span>: [ <span class="yaml-string">main</span> ]
+
+<span class="yaml-key">jobs</span>:
+  <span class="yaml-key">deploy-pages</span>:
+    <span class="yaml-key">runs-on</span>: <span class="yaml-string">ubuntu-latest</span>
+    <span class="yaml-key">steps</span>:
+      - <span class="yaml-key">name</span>: <span class="yaml-string">Checkout Repo</span>
+        <span class="yaml-key">uses</span>: <span class="yaml-string">actions/checkout@v4</span>
+
+      - <span class="yaml-key">name</span>: <span class="yaml-string">Deploy to GitHub Pages Site</span>
+        <span class="yaml-key">uses</span>: <span class="yaml-string">actions/configure-pages@v4</span></pre>
+        </div>
+
+        <div class="action-controls">
+          <button id="runWorkflowBtn" class="primary" onclick="simulateWorkflowRun()">
+            <!-- Run Icon -->
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+            Trigger Action Run
+          </button>
+          <span id="runnerSpinner" style="display:none; align-items:center; gap:0.5rem; font-size:0.85rem; color:var(--accent-orange)">
+            <svg class="animate-spin" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="animation: spin 1s linear infinite;">
+              <circle cx="12" cy="12" r="10" stroke="var(--border-color)" stroke-width="3" fill="none"></circle>
+              <path d="M12 2a10 10 0 0 1 10 10" stroke="var(--accent-orange)" stroke-width="3"></path>
+            </svg>
+            Runner starting up...
+          </span>
+        </div>
+
+        <!-- Action Log Terminal -->
+        <div class="interactive-console" style="margin-top: 1rem; height: 200px;">
+          <div class="console-header">
+            <div>
+              <span class="console-dot" style="background-color: var(--accent-orange); box-shadow: 0 0 8px rgba(240, 136, 62, 0.4);"></span>
+              <span>Workflow Runner Log Output</span>
+            </div>
+            <span id="workflowBadge" class="code-badge" style="color: var(--accent-orange); font-size: 0.7rem; border-color: rgba(240, 136, 62, 0.3);">Idle</span>
+          </div>
+          <div id="runnerLogs" class="console-body" style="font-size: 0.8rem; color: #8b949e;">
+            <div class="console-line">Logs will appear here once you trigger a simulated run.</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Right Column: Step-by-Step Learning Guide checklist -->
+    <div class="sidebar">
+      
+      <!-- Tutorial Checklists -->
+      <div class="card blue-left">
+        <div class="card-title">
+          <!-- Book Open Icon -->
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+            <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+          </svg>
+          Learning Milestones
+        </div>
+        <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1.25rem;">
+          Track your progress through your Git branching & CI/CD workflow session. Check each step off as you complete it.
+        </p>
+
+        <ul class="checklist">
+          <!-- Step 1 -->
+          <li class="check-item" onclick="toggleCheckItem(this)">
+            <input type="checkbox" onchange="updateProgress()">
+            <div class="item-text">
+              <h4>1. Initialize Repository</h4>
+              <p>Create project directory, run <span class="code-badge">git init</span> and link it to a remote GitHub repository.</p>
+            </div>
+          </li>
+
+          <!-- Step 2 -->
+          <li class="check-item" onclick="toggleCheckItem(this)">
+            <input type="checkbox" onchange="updateProgress()">
+            <div class="item-text">
+              <h4>2. Create your Feature Branch</h4>
+              <p>Create a dedicated branch using <span class="code-badge">git checkout -b feature-dev</span>.</p>
+            </div>
+          </li>
+
+          <!-- Step 3 -->
+          <li class="check-item" onclick="toggleCheckItem(this)">
+            <input type="checkbox" onchange="updateProgress()">
+            <div class="item-text">
+              <h4>3. Stage & Commit Changes</h4>
+              <p>Develop HTML & CSS, then run <span class="code-badge">git add .</span> and <span class="code-badge">git commit -m "feat..."</span>.</p>
+            </div>
+          </li>
+
+          <!-- Step 4 -->
+          <li class="check-item" onclick="toggleCheckItem(this)">
+            <input type="checkbox" onchange="updateProgress()">
+            <div class="item-text">
+              <h4>4. Push Branch to Origin</h4>
+              <p>Upload your branch via <span class="code-badge">git push -u origin feature-dev</span>.</p>
+            </div>
+          </li>
+
+          <!-- Step 5 -->
+          <li class="check-item" onclick="toggleCheckItem(this)">
+            <input type="checkbox" onchange="updateProgress()">
+            <div class="item-text">
+              <h4>5. Create a Pull Request (PR)</h4>
+              <p>Open GitHub. Create a Pull Request proposing to merge <span class="code-badge">feature-dev</span> into <span class="code-badge">main</span>.</p>
+            </div>
+          </li>
+
+          <!-- Step 6 -->
+          <li class="check-item" onclick="toggleCheckItem(this)">
+            <input type="checkbox" onchange="updateProgress()">
+            <div class="item-text">
+              <h4>6. Trigger Actions & Merge</h4>
+              <p>Wait for automated GitHub workflows to pass, then merge your PR on GitHub! 🚀</p>
+            </div>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Quick Reference Commands -->
+      <div class="card green-left">
+        <div class="card-title">
+          <!-- Terminal Icon -->
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="4 17 10 11 4 5"></polyline>
+            <line x1="12" y1="19" x2="20" y2="19"></line>
+          </svg>
+          Quick Command Palette
+        </div>
+        <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1rem;">
+          Click commands to copy them to your clipboard.
+        </p>
+        <div class="commands-grid">
+          <div class="cmd-card">
+            <h5>Branch Creation</h5>
+            <code onclick="copyText(this)">git checkout -b feature-dev</code>
+          </div>
+          <div class="cmd-card">
+            <h5>Status & Stage</h5>
+            <code onclick="copyText(this)">git status && git add .</code>
+          </div>
+          <div class="cmd-card">
+            <h5>Commit</h5>
+            <code onclick="copyText(this)">git commit -m "Add index and style"</code>
+          </div>
+          <div class="cmd-card">
+            <h5>Push Upstream</h5>
+            <code onclick="copyText(this)">git push -u origin feature-dev</code>
+          </div>
+        </div>
+        
+        <div class="info-alert">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+          <div>
+            <strong>Tip:</strong> Always run <span class="code-badge">git status</span> before committing to double check which files you are staging!
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <style>
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+
+  <script>
+    // Handle checklist interactions
+    function toggleCheckItem(itemElement) {
+      const checkbox = itemElement.querySelector('input[type="checkbox"]');
+      
+      // Stop event bubbling if clicking direct checkbox
+      itemElement.addEventListener('click', function(e) {
+        if(e.target === checkbox) return;
+      });
+
+      // Toggle state manually if clicking card outer body
+      if (event.target !== checkbox) {
+        checkbox.checked = !checkbox.checked;
+      }
+      
+      if(checkbox.checked) {
+        itemElement.classList.add('completed');
+      } else {
+        itemElement.classList.remove('completed');
+      }
+      
+      updateProgress();
+    }
+
+    // Update Overall Progress
+    function updateProgress() {
+      const items = document.querySelectorAll('.checklist .check-item');
+      const checkedItems = document.querySelectorAll('.checklist .check-item input[type="checkbox"]:checked');
+      
+      const percent = Math.round((checkedItems.length / items.length) * 100);
+      
+      // Update DOM
+      document.getElementById('progressBar').style.width = percent + '%';
+      document.getElementById('progressPercent').innerText = percent + '%';
+
+      // Store in localStorage for persistence
+      const state = Array.from(items).map(item => item.querySelector('input[type="checkbox"]').checked);
+      localStorage.setItem('git-dashboard-progress', JSON.stringify(state));
+
+      // Success Event Banner
+      const banner = document.getElementById('successBanner');
+      if (percent === 100) {
+        banner.style.display = 'flex';
+        // Add visual pulse effect
+        document.getElementById('progressBar').classList.add('pulse-success');
+      } else {
+        banner.style.display = 'none';
+        document.getElementById('progressBar').classList.remove('pulse-success');
+      }
+    }
+
+    // Reset Checklist
+    function resetChecklist() {
+      const items = document.querySelectorAll('.checklist .check-item');
+      items.forEach(item => {
+        const cb = item.querySelector('input[type="checkbox"]');
+        cb.checked = false;
+        item.classList.remove('completed');
+      });
+      updateProgress();
+    }
+
+    // Copy to clipboard helper
+    function copyText(codeElement) {
+      const text = codeElement.innerText;
+      navigator.clipboard.writeText(text).then(() => {
+        const originalText = text;
+        codeElement.innerText = "Copied! ✓";
+        codeElement.style.color = "var(--accent-green)";
+        setTimeout(() => {
+          codeElement.innerText = originalText;
+          codeElement.style.color = "var(--accent-blue)";
+        }, 1200);
+      });
+    }
+
+    // Tab Switcher for workflows
+    function switchTab(tabId) {
+      // Deactivate all
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
+
+      // Activate selected
+      const selectedBtn = Array.from(document.querySelectorAll('.tab-btn')).find(btn => btn.innerText.includes(tabId === 'lint-test' ? 'lint-test.yml' : 'pages-deploy.yml'));
+      if(selectedBtn) selectedBtn.classList.add('active');
+      
+      document.getElementById(tabId).classList.add('active');
+    }
+
+    // Interactive Git Commit Click Behavior
+    const commitData = {
+      1: {
+        cmd: "git init && git add . && git commit -m 'Initial commit'",
+        output: [
+          "Initialized empty Git repository in /workspace/my-project/.git/",
+          "create mode 100644 README.md",
+          "[main (root-commit) 1b2a3f4] Initial commit"
+        ]
+      },
+      2: {
+        cmd: "git checkout -b feature-dev\n# edit index.html\ngit add index.html && git commit -m 'C2: Create index.html structure'",
+        output: [
+          "Switched to a new branch 'feature-dev'",
+          "[feature-dev a2c3e4f] C2: Create index.html structure",
+          " 1 file changed, 45 insertions(+)"
+        ]
+      },
+      3: {
+        cmd: "git add style.css && git commit -m 'C3: Create custom styling in style.css'",
+        output: [
+          "[feature-dev 4d2e9b0] C3: Create custom styling in style.css",
+          " 1 file changed, 185 insertions(+)",
+          " create mode 100644 style.css"
+        ]
+      },
+      4: {
+        cmd: "git commit -am 'C4: Fix minor CSS alignment bugs'",
+        output: [
+          "[feature-dev 8c3d9a1] C4: Fix minor CSS alignment bugs",
+          " 1 file changed, 4 insertions(+), 4 deletions(-)"
+        ]
+      },
+      5: {
+        cmd: "git checkout main && git merge feature-dev",
+        output: [
+          "Switched to branch 'main'",
+          "Updating 1b2a3f4..8c3d9a1",
+          "Fast-forward",
+          " index.html |  45 +++++++++++++++++++++++++++++++++++++++",
+          " style.css  | 185 +++++++++++++++++++++++++++++++++++++++++++++++++++++",
+          " 2 files changed, 230 insertions(+)"
+        ]
+      }
+    };
+
+    function showCommit(commitId) {
+      const data = commitData[commitId];
+      if (!data) return;
+
+      const consoleBody = document.getElementById('consoleBody');
+      consoleBody.innerHTML = ''; // Clear
+
+      // Add command
+      const cmdLine = document.createElement('div');
+      cmdLine.className = 'console-line';
+      cmdLine.innerHTML = `<span class="console-prompt">$</span> <span class="console-cmd">${data.cmd}</span>`;
+      consoleBody.appendChild(cmdLine);
+
+      // Add output lines
+      data.output.forEach(line => {
+        const outLine = document.createElement('div');
+        outLine.className = 'console-line console-output';
+        outLine.innerText = line;
+        consoleBody.appendChild(outLine);
+      });
+      
+      // Mark active node
+      document.querySelectorAll('.git-node').forEach((node, idx) => {
+        if(idx + 1 === commitId) {
+          node.style.transform = 'scale(1.25)';
+          node.style.borderWidth = '5px';
+        } else {
+          node.style.transform = 'none';
+          node.style.borderWidth = '4px';
+        }
+      });
+    }
+
+    // Simulate GitHub Actions Workflow Runner
+    let isWorkflowRunning = false;
+    function simulateWorkflowRun() {
+      if (isWorkflowRunning) return;
+      isWorkflowRunning = true;
+      
+      const btn = document.getElementById('runWorkflowBtn');
+      const spinner = document.getElementById('runnerSpinner');
+      const statusBadge = document.getElementById('workflowBadge');
+      const logBody = document.getElementById('runnerLogs');
+      
+      btn.disabled = true;
+      spinner.style.display = 'inline-flex';
+      statusBadge.innerText = 'Queued';
+      statusBadge.style.color = 'var(--accent-orange)';
+      statusBadge.style.borderColor = 'rgba(240, 136, 62, 0.3)';
+      
+      logBody.innerHTML = '<div class="console-line">🚀 Requesting new worker instance...</div>';
+      
+      const steps = [
+        { msg: "🤖 Worker provisioning successful. Host OS: Ubuntu 22.04.4 LTS", delay: 800 },
+        { msg: "🔑 Set up Job permissions & API authentications...", delay: 600 },
+        { msg: "📥 Running Action: actions/checkout@v4", delay: 700 },
+        { msg: "   Syncing repository to '/home/runner/work/GithubActions/GithubActions'...", delay: 400 },
+        { msg: "   Branch matched: refs/heads/feature-dev", delay: 300 },
+        { msg: "🧹 Running Action: HTML Linter validation...", delay: 800 },
+        { msg: "   [INFO] index.html: No lint errors detected! Well done. 🎉", delay: 500 },
+        { msg: "🎨 Running Action: CSS Style Linter check...", delay: 900 },
+        { msg: "   [INFO] style.css: Structure matches configuration directives.", delay: 400 },
+        { msg: "✅ Workflow validation run complete. All tests PASSED.", delay: 600 },
+        { msg: "🎉 Job Succeeded! 🚀", delay: 200 }
+      ];
+
+      let currentStep = 0;
+      
+      function runNextStep() {
+        if (currentStep < steps.length) {
+          const step = steps[currentStep];
+          statusBadge.innerText = 'Running';
+          
+          const line = document.createElement('div');
+          line.className = 'console-line';
+          if (step.msg.includes('PASSED') || step.msg.includes('Succeeded')) {
+            line.style.color = 'var(--accent-green)';
+          } else if (step.msg.includes('Error') || step.msg.includes('FAIL')) {
+            line.style.color = 'var(--accent-red)';
+          } else if (step.msg.includes('actions/')) {
+            line.style.color = 'var(--accent-purple)';
+          }
+          line.innerText = step.msg;
+          logBody.appendChild(line);
+          logBody.scrollTop = logBody.scrollHeight;
+          
+          currentStep++;
+          setTimeout(runNextStep, step.delay);
+        } else {
+          // Finished
+          isWorkflowRunning = false;
+          btn.disabled = false;
+          spinner.style.display = 'none';
+          statusBadge.innerText = 'Success';
+          statusBadge.style.color = 'var(--accent-green)';
+          statusBadge.style.borderColor = 'rgba(63, 185, 80, 0.3)';
+        }
+      }
+      
+      setTimeout(runNextStep, 1000);
+    }
+
+    // Load saved checklist state
+    window.addEventListener('DOMContentLoaded', () => {
+      const saved = localStorage.getItem('git-dashboard-progress');
+      if (saved) {
+        try {
+          const state = JSON.parse(saved);
+          const items = document.querySelectorAll('.checklist .check-item');
+          items.forEach((item, idx) => {
+            if (state[idx]) {
+              const cb = item.querySelector('input[type="checkbox"]');
+              cb.checked = true;
+              item.classList.add('completed');
+            }
+          });
+          updateProgress();
+        } catch(e) {
+          console.error("Failed to parse progress state", e);
+        }
+      }
+    });
+  </script>
+</body>
+</html>
